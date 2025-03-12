@@ -1,9 +1,10 @@
-from urllib import request, response
-
-from django.utils.deprecation import MiddlewareMixin
 
 
-class CustomHeaderMiddleware(MiddlewareMixin):
-    def process_response(self, request, response):
-        response['X - H'] = "Woroud"
+class CustomHeaderMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)  # استدعاء الاستجابة
+        response['X-H'] = "Woroud"  # تعديل الهيدر
         return response
