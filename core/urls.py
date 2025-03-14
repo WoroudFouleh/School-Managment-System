@@ -1,16 +1,13 @@
+from rest_framework.routers import DefaultRouter
+from tutorial.quickstart.views import UserViewSet
+
 from .views import *
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import routers
 
-urlpatterns = [
-    # students API
-    path('students/', csrf_exempt(StudentView.as_view()), name='student-list'),
-    path('students/<int:student_id>/', csrf_exempt(StudentView.as_view()), name='student-detail'),
-    # classroom API
-    path('classrooms/', csrf_exempt(ClassroomView.as_view()), name='classroom-list'),
-    path('classrooms/<int:class_id>/', csrf_exempt(ClassroomView.as_view()), name='classroom-detail'),
-    # school API
-    path('schools/', csrf_exempt(SchoolView.as_view()), name='school-list'),
-    path('schools/<int:school_id>/', csrf_exempt(SchoolView.as_view()), name='school-detail'),
-
-]
+router = routers.DefaultRouter()
+router.register(r'students',StudentViewSet, basename='student')
+router.register(r'schools',SchoolViewSet, basename='school')
+router.register(r'classrooms',ClassroomViewSet, basename='classroom')
+urlpatterns = router.urls

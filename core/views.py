@@ -1,138 +1,85 @@
-from django.shortcuts import render
-from .models import Student, Classroom, School
-from django.views import View
-from .serializers import SchoolSerializer, StudentSerializer, ClassroomSerializer
 from django.http import JsonResponse
-import json
+from rest_framework.viewsets import ViewSet
+
+from core.components import *
+
 
 # Create your views here.
-class StudentView(View):
-    def get(self, request):
-        students = Student.objects.all()
-        serializer = StudentSerializer(students, many=True)
-        return JsonResponse(serializer.data, safe=False, status=200)
+class StudentViewSet(ViewSet):
+    def list(self, request):
+        return JsonResponse(StudentComponent.get_all_students(), safe=False)
 
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            serializer = StudentSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data, status=201)
-            return JsonResponse(serializer.errors, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-    def put(self, request, student_id):
-        try:
-            student = Student.objects.get(pk=student_id)
-            data = json.loads(request.body)
-            for key, value in data.items():
-                setattr(student, key, value)
-
-            student.save()
-            serializer = StudentSerializer(student)
-            return JsonResponse(serializer.data, status=200)
-
-        except Student.DoesNotExist:
+    def retrieve(self, request, pk=None):
+        student = StudentComponent.get_student_by_id(pk)
+        if student is None:
             return JsonResponse({'error': 'Student not found'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse(student, safe=False)
 
-    def delete(self, request, student_id):
-        try:
-            student = Student.objects.get(pk=student_id)
-            student.delete()
-            return JsonResponse({'message': 'Student deleted successfully'}, status=204)
-        except Student.DoesNotExist:
+    def create(self, request):
+        return JsonResponse(StudentComponent.create_student(request.data), status=201)
+
+    def update(self, request, pk=None):
+        student = StudentComponent.update_student(pk, request.data)
+        if student is None:
             return JsonResponse({'error': 'Student not found'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse(student)
 
-class ClassroomView(View):
-    def get(self, request):
-        classrooms = Classroom.objects.all()
-        serializer = ClassroomSerializer(classrooms, many=True)
-        return JsonResponse(serializer.data, safe=False, status=200)
+    def destroy(self, request, pk=None):
+        if not StudentComponent.delete_student(pk):
+            return JsonResponse({'error': 'Student not found'}, status=404)
+        return JsonResponse({'status': 'deleted'})
 
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            serializer = ClassroomSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data, status=201)
-            return JsonResponse(serializer.errors, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
 
-    def put(self, request, class_id):
-        try:
-            classroom = Classroom.objects.get(pk=class_id)
-            data = json.loads(request.body)
-            for key, value in data.items():
-                setattr(classroom, key, value)
+class ClassroomViewSet(ViewSet):
+    def list(self, request):
+        return JsonResponse(ClassroomComponent.get_all_classrooms(), safe=False)
 
-            classroom.save()
-            serializer = ClassroomSerializer(classroom)
-            return JsonResponse(serializer.data, status=200)
-
-        except Classroom.DoesNotExist:
+    def retrieve(self, request, pk=None):
+        classroom = ClassroomComponent.get_classroom_by_id(pk)
+        if classroom is None:
             return JsonResponse({'error': 'Classroom not found'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse(classroom, safe=False)
 
-    def delete(self, request, class_id):
-        try:
-            classroom = Classroom.objects.get(pk=class_id)
-            classroom.delete()
-            return JsonResponse({'message': 'Class deleted successfully'}, status=204)
-        except Classroom.DoesNotExist:
-            return JsonResponse({'error': 'Class not found'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+    def create(self, request):
+        return JsonResponse(ClassroomComponent.create_classroom(request.data), status=201)
 
+    def update(self, request, pk=None):
+        classroom = ClassroomComponent.update_classroom(pk, request.data)
+        if classroom is None:
+            return JsonResponse({'error': 'Classroom not found'}, status=404)
+        return JsonResponse(classroom)
 
-class SchoolView(View):
-    def get(self, request):
-        schools = School.objects.all()
-        serializer = SchoolSerializer(schools, many=True)
-        return JsonResponse(serializer.data, safe=False, status=200)
+    def destroy(self, request, pk=None):
+        if not ClassroomComponent.delete_classroom(pk):
+            return JsonResponse({'error': 'Classroom not found'}, status=404)
+        return JsonResponse({'status': 'deleted'})
 
-    def post(self, request):
-        try:
-            data = json.loads(request.body)
-            serializer = SchoolSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data, status=201)
-            return JsonResponse(serializer.errors, status=400)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+class SchoolViewSet(ViewSet):
+    def list(self, request):
+        return JsonResponse(SchoolComponent.get_all_schools(), safe=False)
 
-    def put(self, request, school_id):
-        try:
-            school = School.objects.get(pk=school_id)
-            data = json.loads(request.body)
-            for key, value in data.items():
-                setattr(school, key, value)
-
-            school.save()
-            serializer = SchoolSerializer(school)
-            return JsonResponse(serializer.data, status=200)
-
-        except School.DoesNotExist:
+    def retrieve(self, request, pk=None):
+        school = SchoolComponent.get_school_by_id(pk)
+        if school is None:
             return JsonResponse({'error': 'School not found'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse(school, safe=False)
 
-    def delete(self, request, school_id):
-        try:
-            school = School.objects.get(pk=school_id)
-            school.delete()
-            return JsonResponse({'message': 'School deleted successfully'}, status=204)
-        except School.DoesNotExist:
+    def create(self, request):
+        return JsonResponse(SchoolComponent.create_school(request.data), status=201)
+
+    def update(self, request, pk=None):
+        school = SchoolComponent.update_school(pk, request.data)
+        if school is None:
             return JsonResponse({'error': 'School not found'}, status=404)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+        return JsonResponse(school)
+
+    def destroy(self, request, pk=None):
+        if not SchoolComponent.delete_school(pk):
+            return JsonResponse({'error': 'School not found'}, status=404)
+        return JsonResponse({'status': 'deleted'})
+
+
+
+
+
 
