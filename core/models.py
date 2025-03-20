@@ -1,68 +1,63 @@
+
 from django.db import models
+import enum
+from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime
+from sqlalchemy.orm import relationship
+from .base import Base
+from .database import engine
 
-# Create your models here.
-class School(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=225, null=False)
-    address = models.CharField(max_length=225, null=False)
-    phone_number = models.CharField(max_length=225, null=False)
-    manager_name = models.CharField(max_length=225, null=False)
-    PRIMARY = 'primary'
-    SECONDARY = 'secondary'
-    HIGH_SCHOOL = 'high_school'
-    SCHOOL_TYPES = [
-        (PRIMARY, 'Primary'),
-        (SECONDARY, 'Secondary'),
-        (HIGH_SCHOOL, 'High School'),
-    ]
+class SchoolTypeEnum(enum.Enum):
+    PRIMARY = "primary"
+    SECONDARY = "secondary"
+    HIGH_SCHOOL = "high_school"
 
-    type = models.CharField(
-        max_length=20,
-        choices=SCHOOL_TYPES,
-        default=PRIMARY,
-        null=False
-    )
+class GenderTypeEnum(enum.Enum):
+    BOYS = "boys"
+    GIRLS = "girls"
+    MIXED = "mixed"
 
-    BOYS = 'boys'
-    GIRLS = 'girls'
-    MIXED = 'mixed'
-    GENDER_CHOICES = [
-        (BOYS, 'Boys'),
-        (GIRLS, 'Girls'),
-        (MIXED, 'Mixed')
-    ]
-    gender_type = models.CharField(
-        max_length=10,
-        choices=GENDER_CHOICES,
-        default=MIXED,
-        null=False
-    )
+class School(Base):
+    __tablename__ = 'schools'
 
-    def __str__(self):
-        return f"{self.name}, {self.address}, {self.phone_number}, {self.manager_name}, {self.type}, {self.gender_type}"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    address = Column(String(255), nullable=False)
+    phone_number = Column(String(255), nullable=False)
+    manager_name = Column(String(255), nullable=False)
+
+    type = Column(Enum(SchoolTypeEnum), default=SchoolTypeEnum.PRIMARY, nullable=False)
+    gender_type = Column(Enum(GenderTypeEnum), default=GenderTypeEnum.BOYS, nullable=False)
+
+    classrooms = relationship("Classroom", back_populates="school")
+    students = relationship("Student", back_populates="school")
+
+class Classroom(Base):
+    __tablename__ = 'classrooms'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255), nullable=False)
+    section = Column(String(255), nullable=False)
+    num_chairs = Column(Integer)
+    school_id = Column(Integer, ForeignKey('schools.id'))
+    school = relationship('School', back_populates='classrooms')
+    students = relationship('Student', back_populates='classrooms')
+
+class Student(Base):
+    __tablename__ = 'students'
+    id = Column(Integer, primary_key=True)
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
+    date_of_birth = Column(DateTime)
+    email = Column(String(255), nullable=False, unique=True)
+    city = Column(String(255), nullable=False)
+    ID_number = Column(String(255),nullable=False, unique=True)
+    address = Column(String(255), nullable=False)
+    school_id = Column(Integer, ForeignKey('schools.id'))
+    classroom_id = Column(Integer, ForeignKey('classrooms.id'))
+    school = relationship('School', back_populates='students')
+    classrooms = relationship('Classroom', back_populates='students')
 
 
-class Classroom(models.Model):
-    id = models.AutoField(primary_key=True)
-    grade = models.CharField(max_length=225, null=False)
-    section = models.CharField(max_length=225, null=False)
-    num_chairs = models.IntegerField(null=False)
-    school = models.ForeignKey(School, on_delete=models.CASCADE)
-    def __str__(self):
-        return f"{self.grade} - {self.section} - {self.num_chairs} chairs - School: {self.school}"
 
 
-class Student(models.Model):
-    id = models.AutoField(primary_key=True)
-    first_name = models.CharField(max_length=225, null=False)
-    last_name = models.CharField(max_length=225, null=False)
-    date_of_birth = models.DateField(null=False)
-    email = models.EmailField(null=False, unique=True)
-    city = models.CharField(max_length=225, null=False)
-    ID_number = models.CharField(max_length=225, unique=True, null=False)
-    address = models.CharField(max_length=225, null=False)
-    school = models.ForeignKey(School, on_delete=models.CASCADE)
-    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.date_of_birth} - {self.email} - {self.city} - {self.ID_number} - {self.address}"
+

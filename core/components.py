@@ -1,104 +1,135 @@
 from .repositories import *
 from .serializers import *
+from .database import get_db_session
 
 class StudentComponent:
+    student_schema = StudentSchema()
+    students_schema = StudentSchema(many=True)
+
     @staticmethod
     def get_all_students():
-        students = StudentRepository.get_all_students()
-        return StudentSerializer(students, many=True).data
+        session = get_db_session()
+        students = StudentRepository.get_all_students(session)
+        return StudentComponent.students_schema.dump(students)
 
     @staticmethod
     def get_student_by_id(student_id):
-        student = StudentRepository.get_student_by_id(student_id)
+        session = get_db_session()
+        student = StudentRepository.get_student_by_id(session,student_id)
         if not student:
             return None
-        return StudentSerializer(student).data
+        return StudentComponent.student_schema.dump(student)
 
     @staticmethod
     def create_student(data):
-        student = StudentRepository.create_student(data)
-        return StudentSerializer(student).data
+        session = get_db_session()
+        student = StudentRepository.create_student(session,data)
+        if not student:
+            return None
+        return StudentComponent.student_schema.dump(student)
 
     @staticmethod
     def update_student(student_id, data):
-        student = StudentRepository.get_student_by_id(student_id)
+        session = get_db_session()
+        student = StudentRepository.get_student_by_id(session, student_id)
         if not student:
             return None
-        updated_student = StudentRepository.update_student(student, data)
-        return StudentSerializer(updated_student).data
+        updated_student = StudentRepository.update_student(session, student_id, data)
+        return StudentComponent.student_schema.dump(updated_student)
 
     @staticmethod
     def delete_student(student_id):
-        student = StudentRepository.get_student_by_id(student_id)
+        session = get_db_session()
+        student = StudentRepository.get_student_by_id(session, student_id)
         if not student:
             return False
-        StudentRepository.delete_student(student)
-        return True
-
-class ClassroomComponent:
-    @staticmethod
-    def get_all_classrooms():
-        classrooms = ClassroomRepository.get_all_classrooms()
-        return ClassroomSerializer(classrooms, many=True).data
-
-    @staticmethod
-    def get_classroom_by_id(classroom_id):
-        classroom = ClassroomRepository.get_classroom_by_id(classroom_id)
-        if not classroom:
-            return None
-        return ClassroomSerializer(classroom).data
-
-    @staticmethod
-    def create_classroom(data):
-        classroom = ClassroomRepository.create_classroom(data)
-        return ClassroomSerializer(classroom).data
-
-    @staticmethod
-    def update_classroom(classroom_id, data):
-        classroom = ClassroomRepository.get_classroom_by_id(classroom_id)
-        if not classroom:
-            return None
-        updated_classroom = ClassroomRepository.update_classroom(classroom, data)
-        return ClassroomSerializer(updated_classroom).data
-
-    @staticmethod
-    def delete_classroom(classroom_id):
-        classroom = ClassroomRepository.get_classroom_by_id(classroom_id)
-        if not classroom:
-            return False
-        ClassroomRepository.delete_classroom(classroom)
+        StudentRepository.delete_student(session, student_id)
         return True
 
 class SchoolComponent:
+    school_schema = SchoolSchema()
+    schools_schema = SchoolSchema(many=True)
+
     @staticmethod
     def get_all_schools():
-        schools = SchoolRepository.get_all_schools()
-        return SchoolSerializer(schools, many=True).data
+        session = get_db_session()
+        schools = SchoolRepository.get_all_schools(session)
+        return SchoolComponent.schools_schema.dump(schools)
 
     @staticmethod
     def get_school_by_id(school_id):
-        school = SchoolRepository.get_school_by_id()(school_id)
+        session = get_db_session()
+        school = SchoolRepository.get_school_by_id(session,school_id)
         if not school:
             return None
-        return SchoolSerializer(school).data
+        return SchoolComponent.school_schema.dump(school)
 
     @staticmethod
     def create_school(data):
-        school = SchoolRepository.create_school(data)
-        return SchoolSerializer(school).data
+        session = get_db_session()
+        school = SchoolRepository.create_school(session, data)
+        if not school:
+            return None
+        return SchoolComponent.school_schema.dump(school)
 
     @staticmethod
     def update_school(school_id, data):
-        school = SchoolRepository.get_school_by_id(school_id)
+        session = get_db_session()
+        school = SchoolRepository.get_school_by_id(session, school_id)
         if not school:
             return None
-        updated_school = SchoolRepository.update_school(school, data)
-        return SchoolSerializer(updated_school).data
+        updated_school = SchoolRepository.update_school(session, school_id, data)
+        return SchoolComponent.school_schema.dump(updated_school)
 
     @staticmethod
     def delete_school(school_id):
-        school = SchoolRepository.get_school_by_id(school_id)
+        session = get_db_session()
+        school = SchoolRepository.get_school_by_id(session, school_id)
         if not school:
             return False
-        SchoolRepository.delete_school(school)
+        SchoolRepository.delete_school(session, school_id)
+        return True
+
+class ClassroomComponent:
+    class_schema = ClassRoomSchema()
+    classes_schema = ClassRoomSchema(many=True)
+
+    @staticmethod
+    def get_all_classrooms():
+        session = get_db_session()
+        classrooms = ClassroomRepository.get_all_classrooms(session)
+        return ClassroomComponent.classes_schema.dump(classrooms)
+
+    @staticmethod
+    def get_classroom_by_id(class_id):
+        session = get_db_session()
+        classroom = ClassroomRepository.get_classroom_by_id(session, class_id)
+        if not classroom:
+            return None
+        return ClassroomComponent.class_schema.dump(classroom)
+
+    @staticmethod
+    def create_classroom(data):
+        session = get_db_session()
+        classroom = ClassroomRepository.create_classroom(session, data)
+        if not classroom:
+            return None
+        return ClassroomComponent.class_schema.dump(classroom)
+
+    @staticmethod
+    def update_classroom(class_id, data):
+        session = get_db_session()
+        classroom = ClassroomRepository.get_classroom_by_id(session, class_id)
+        if not classroom:
+            return None
+        updated_classroom = ClassroomRepository.update_classroom(session, class_id, data)
+        return ClassroomComponent.class_schema.dump(updated_classroom)
+
+    @staticmethod
+    def delete_classroom(class_id):
+        session = get_db_session()
+        classroom = ClassroomRepository.get_classroom_by_id(session, class_id)
+        if not classroom:
+            return False
+        ClassroomRepository.delete_classroom(session, class_id)
         return True
