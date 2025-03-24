@@ -1,10 +1,8 @@
-from rest_framework.routers import DefaultRouter
-from tutorial.quickstart.views import UserViewSet
-
-from .views import *
-from django.urls import path
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework import routers
+
+from core.views.classroom_view import ClassroomViewSet
+from core.views.school_view import SchoolViewSet
+from core.views.student_view import StudentViewSet
 
 router = routers.DefaultRouter()
 router.register(r'students',StudentViewSet, basename='student')
